@@ -1,0 +1,1 @@
+Signzone is a simple script that will sign (DNSSEC) the DNS zone file of a given domain name after auto-incrementing its serial number. If necessary keys has not yet been created, generate and import them in their respective zone file before signature.
