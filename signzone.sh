@@ -32,7 +32,7 @@
 
 # Signzone is a simple script that will sign (DNSSEC) the DNS zone file of a
 # given domain name after auto-incrementing its serial number. If necessary keys
-# has not yet been created, generate and import them in their respective zone 
+# has not yet been created, generate and import them in their respective zone
 # file before signature.
 #
 # IMPORTANT: zone files must be named as follows: domain.zone
@@ -52,7 +52,7 @@ usage="Usage: signzone -d domain [-k keysdir] [-z zonedir] [-o file]
 # Options
 ################################################################################
 
-zonedirDEFAULT='/var/nsd/zones/'
+zonedirDEFAULT='/var/nsd/zones/master/'
 keysdirDEFAULT='/var/nsd/keys/'
 algorithm='RSASHA1_NSEC3'
 KSKbits=4096
@@ -162,7 +162,7 @@ if [ ! -d "$keysdir" ]; then
     echo "Error: keys directory not found."
     exit 1
 fi
-if [ ! -d "$keysdir/KSK" ]; then
+if [ ! -d $keysdir/KSK ]; then
     mkdir $keysdir/KSK
 fi
 if [ ! -d $keysdir/ZSK ]; then
@@ -212,7 +212,7 @@ do
         # Generate keys
         if [ "$i" == "KSK" ]; then
             printf "Creating $KSKbits bits $algorithm $i key... "
-            $ldnsKeygen -a $algorithm -b $KSKbits $domain 1> /dev/null
+            $ldnsKeygen -a $algorithm -b $KSKbits -k $domain 1> /dev/null
             testPrevCmd
         else
             printf "Creating $ZSKbits bits $algorithm $i key... "
@@ -224,7 +224,9 @@ do
             sed "s:$keysdir/$i/::" | sed 's/[0-9]\+ //;s/.key$//')
         eval KEY$i=$KEY
         # Add key to zone file
+	printf "Importing $i key into zone file... "
         echo "\$INCLUDE $keysdir$i/$KEY.key" >> $zonedir$domain.zone
+	testPrevCmd
     fi
 done
 
